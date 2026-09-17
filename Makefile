@@ -21,7 +21,7 @@ endif
 
 # --- Project -----------------------------------------------------------------
 BINARY  := webknife
-MODULE  := github.com/webknife/webknife
+MODULE  := github.com/aognio/webknife
 CMD     := ./cmd/$(BINARY)
 BUILDPKG := $(MODULE)/internal/build
 
@@ -140,6 +140,10 @@ uninstall: ## Remove the installed binary
 .PHONY: clean
 clean: ## Remove build artifacts
 	$(Q)rm -rf $(OUTDIR) coverage.out
+
+.PHONY: manual-test
+manual-test: $(TARGET) ## Run a manual test scenario (make manual-test TEST=01)
+	$(Q)scripts/test-webknife.sh $(TEST)
 
 ##@ Help
 

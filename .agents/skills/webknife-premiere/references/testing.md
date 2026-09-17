@@ -92,3 +92,20 @@ make test
 make test-race
 make cover   # opens HTML coverage report
 ```
+
+## Manual test harness
+
+For end-to-end HTTP experimentation beyond what automated tests cover:
+
+```bash
+scripts/test-webknife.sh help     # list all scenarios
+scripts/test-webknife.sh 03       # run scenario 03 (echo)
+```
+
+Each scenario starts a Webknife server in the foreground and prints `curl` commands for manual inspection. Press `Ctrl+C` to stop.
+
+**When to use each:**
+- `go test ./...` — deterministic automated correctness
+- `scripts/test-webknife.sh <scenario>` — manual end-to-end HTTP experimentation, log inspection, exploratory testing
+
+Environment variables: `WEBKNIFE`, `HOST`, `PORT`. See `scripts/test-webknife.sh help` for details.

@@ -625,6 +625,37 @@ Tests use `httptest` extensively and require no external Internet access. Test c
 - CLI argument parsing for all commands
 - Secret redaction
 
+### Manual Test Harness
+
+A Bash-based manual test harness is available for interactive exploration:
+
+```bash
+scripts/test-webknife.sh help
+```
+
+This displays all available scenarios:
+
+```bash
+scripts/test-webknife.sh 01   # Static file server
+scripts/test-webknife.sh 03   # Echo / request inspection
+scripts/test-webknife.sh 09   # Reverse proxy
+```
+
+Each scenario starts a Webknife server in the foreground and prints `curl` commands to run from another terminal. Press `Ctrl+C` to stop.
+
+Environment variables for overriding defaults:
+
+```bash
+PORT=9090 scripts/test-webknife.sh 03
+WEBKNIFE=/usr/local/bin/webknife scripts/test-webknife.sh 01
+```
+
+Or via Make:
+
+```bash
+make manual-test TEST=01
+```
+
 ## Project Philosophy
 
 Webknife is built on a few principles:

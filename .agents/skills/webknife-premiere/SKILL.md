@@ -34,6 +34,7 @@ A single-binary, CLI-first HTTP laboratory for diagnostics, testing, proxying, s
 4. **Ports live in pkg/webknife.** The `Publisher` interface and `Middleware` type are the only shared contracts.
 5. **Preserve dependency direction.** cmd/ → internal/application/ → pkg/*. Never reverse this. Never import internal/ from pkg/.
 6. **No speculative abstractions.** Do not create interfaces, repositories, factories, or service layers unless they solve a current problem.
+7. **Manual tests are separate.** Use `go test ./...` for automated correctness. Use `scripts/test-webknife.sh <scenario>` for manual HTTP experimentation.
 
 ## Project layout
 
