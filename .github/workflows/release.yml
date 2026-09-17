@@ -1,0 +1,159 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Format check
+        run: test -z "$(gofmt -l .)"
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -race -count=1 ./...
+
+      - name: Architecture checks
+        run: go test ./internal/archtest/
+
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: arm64
+            ext: ""
+            archive: tar.gz
+          - goos: darwin
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: darwin
+            goarch: arm64
+            ext: ""
+            archive: tar.gz
+          - goos: windows
+            goarch: amd64
+            ext: .exe
+            archive: zip
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=dev-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cross-compile
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          go build -trimpath \
+            -ldflags "-s -w -X github.com/aognio/webknife/internal/build.Version=${VERSION} -X github.com/aognio/webknife/internal/build.Commit=$(git rev-parse --short HEAD) -X github.com/aognio/webknife/internal/build.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            -o "dist/webknife${{ matrix.ext }}" \
+            ./cmd/webknife
+
+      - name: Package
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ steps.version.outputs.version }}
+          EXT: ${{ matrix.ext }}
+          ARCHIVE_FMT: ${{ matrix.archive }}
+        run: |
+          ARCHIVE_NAME="webknife_${VERSION}_${GOOS}_${GOARCH}"
+          cp LICENSE README.md dist/
+          cd dist
+          if [ "$ARCHIVE_FMT" = "zip" ]; then
+            zip "../dist/${ARCHIVE_NAME}.zip" webknife${EXT} LICENSE README.md
+          else
+            tar czf "../dist/${ARCHIVE_NAME}.tar.gz" webknife${EXT} LICENSE README.md
+          fi
+
+      - name: Smoke test (native)
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        run: |
+          chmod +x dist/webknife
+          ./dist/webknife version
+          ./dist/webknife help > /dev/null
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webknife_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: dist/
+
+  publish:
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          merge-multiple: true
+
+      - name: Checksums
+        run: |
+          cd artifacts
+          sha256sum *.tar.gz *.zip > SHA256SUMS
+          cat SHA256SUMS
+          mv SHA256SUMS ..
+
+      - name: Detect prerelease
+        id: prerelease
+        run: |
+          if [[ "${{ github.ref_name }}" == *"-rc"* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ARGS=("${{ github.ref_name }}" --title "${{ github.ref_name }}" --generate-notes)
+          if [ "${{ steps.prerelease.outputs.prerelease }}" = "true" ]; then
+            ARGS+=(--prerelease)
+          fi
+          gh release create "${ARGS[@]}" \
+            artifacts/**/*.tar.gz \
+            artifacts/**/*.zip \
+            SHA256SUMS

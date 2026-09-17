@@ -72,7 +72,31 @@ webknife proxy --listen :8080 \
 
 ## Installation
 
-### From source
+### Download a release binary
+
+Precompiled binaries are available from [GitHub Releases](https://github.com/aognio/webknife/releases).
+
+Download the archive for your platform, extract it, and put the binary in your `PATH`.
+
+```bash
+# Linux amd64
+tar xzf webknife_v0.1.0_linux_amd64.tar.gz
+sudo mv webknife /usr/local/bin/
+
+# macOS Apple Silicon
+tar xzf webknife_v0.1.0_darwin_arm64.tar.gz
+sudo mv webknife /usr/local/bin/
+```
+
+### Verify checksum
+
+Each release includes a `SHA256SUMS` file:
+
+```bash
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+### Build from source
 
 ```bash
 git clone https://github.com/aognio/webknife

@@ -139,7 +139,23 @@ uninstall: ## Remove the installed binary
 
 .PHONY: clean
 clean: ## Remove build artifacts
-	$(Q)rm -rf $(OUTDIR) coverage.out
+	$(Q)rm -rf $(OUTDIR) dist coverage.out
+
+##@ Release
+
+DISTDIR := dist
+
+.PHONY: release-snapshot
+release-snapshot: ## Build a local release snapshot for current platform
+	$(Q)mkdir -p $(DISTDIR)
+	$(Q)EXT=""; \
+	if [ "$$(go env GOOS)" = "windows" ]; then EXT=".exe"; fi; \
+	CGO_ENABLED=0 $(GO) build -trimpath \
+		-ldflags '-s -w $(LDFLAGS)' \
+		-o "$(DISTDIR)/$(BINARY)$$EXT" $(CMD)
+	$(Q)cp LICENSE README.md $(DISTDIR)/
+	$(Q)cd $(DISTDIR) && tar czf "$(BINARY)_$(VERSION)_$$(go env GOOS)_$$(go env GOARCH).tar.gz" $(BINARY)$$EXT LICENSE README.md
+	$(Q)echo "snapshot $(DISTDIR)/$(BINARY)_$(VERSION)_$$(go env GOOS)_$$(go env GOARCH).tar.gz"
 
 .PHONY: manual-test
 manual-test: $(TARGET) ## Run a manual test scenario (make manual-test TEST=01)

@@ -3,6 +3,7 @@
 
 # Build output
 /bin/
+/dist/
 /webknife
 /webknife.exe
 *.exe

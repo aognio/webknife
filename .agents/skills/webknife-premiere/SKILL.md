@@ -99,7 +99,8 @@ This pipeline is assembled in `internal/application/app.go` → `buildHandler()`
 - [cli.md](references/cli.md) — command naming, flag conventions, adding new commands
 - [events.md](references/events.md) — event types, publishing, consumption, what deserves an event
 - [http-pipeline.md](references/http-pipeline.md) — middleware composition, handler patterns, request lifecycle
-- [testing.md](references/testing.md) — test patterns, httptest, deterministic tests
+- [testing.md](references/testing.md) — test patterns, httptest, deterministic tests, manual harness
 - [security.md](references/security.md) — credential redaction, path traversal, proxy safety
 - [conventions.md](references/conventions.md) — code style, naming, Go idioms
 - [extension-guide.md](references/extension-guide.md) — how to add a new capability
+- [release.md](references/release.md) — CI/CD, release process, versioning, platforms
