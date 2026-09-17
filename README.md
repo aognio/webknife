@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/images/webknife-logo.png" alt="Webknife" width="400">
+</p>
+
 # Webknife
 
 A single-binary, CLI-first HTTP laboratory for diagnostics, testing, proxying, serving, inspection, and experimentation.
