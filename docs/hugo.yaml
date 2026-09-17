@@ -1,0 +1,38 @@
+baseURL: https://aognio.github.io/webknife/
+title: Webknife Documentation
+theme: github.com/alex-shpak/hugo-book
+
+defaultContentLanguage: en
+
+enableGitInfo: true
+
+markup:
+  highlight:
+    codeFences: true
+    lineNos: false
+    style: dracula
+  goldmark:
+    renderer:
+      unsafe: true
+
+params:
+  BookTheme: auto
+  BookToC: true
+  BookSearch: true
+  BookRepo: https://github.com/aognio/webknife
+  BookEditPath: edit/main/docs
+  BookSection: docs
+  BookDateFormat: "2006-01-01"
+  SideMenuDisableSearch: false
+  SideMenuEnableSearch: true
+
+languages:
+  en:
+    label: English
+    weight: 1
+
+menu:
+  after:
+    - name: "GitHub"
+      url: "https://github.com/aognio/webknife"
+      weight: 10
