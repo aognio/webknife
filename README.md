@@ -75,7 +75,7 @@ webknife proxy --listen :8080 \
 ### From source
 
 ```bash
-git clone https://github.com/webknife/webknife
+git clone https://github.com/aognio/webknife
 cd webknife
 make build
 ```
@@ -85,7 +85,7 @@ The binary is placed at `bin/webknife`.
 ### Using `go install`
 
 ```bash
-go install github.com/webknife/webknife/cmd/webknife@latest
+go install github.com/aognio/webknife/cmd/webknife@latest
 ```
 
 ### With Make
@@ -351,7 +351,7 @@ import (
     "log"
     "net/http"
 
-    "github.com/webknife/webknife/pkg/webknife"
+    "github.com/aognio/webknife/pkg/webknife"
 )
 
 func main() {

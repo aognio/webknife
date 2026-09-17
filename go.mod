@@ -1,3 +1,3 @@
-module github.com/webknife/webknife
+module github.com/aognio/webknife
 
 go 1.24.13

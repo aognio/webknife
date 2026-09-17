@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/webknife/webknife/internal/events"
+	"github.com/aognio/webknife/internal/events"
 )
 
 func TestEventBus_PublishSubscribe(t *testing.T) {

@@ -47,7 +47,7 @@ Verify this works in tests.
 
 ### 5. Tests
 
-Add to `pkg/webknife/webknife_test.go`:
+Add tests in `pkg/<newfeature>/<newfeature>_test.go`:
 - Basic behavior test
 - Edge cases (empty input, invalid config)
 - Composition with auth

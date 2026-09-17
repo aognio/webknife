@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/webknife/webknife/internal/adapters/cli"
+	"github.com/aognio/webknife/internal/adapters/cli"
 )
 
 func TestParseArgs_NoCommand(t *testing.T) {

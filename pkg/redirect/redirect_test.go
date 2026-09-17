@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/webknife/webknife/pkg/redirect"
+	"github.com/aognio/webknife/pkg/redirect"
 )
 
 func TestRedirectHandler_302(t *testing.T) {

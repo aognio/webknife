@@ -69,7 +69,7 @@ func TestParseArgs_Command(t *testing.T) {
 
 ## Test file placement
 
-- `pkg/webknife/webknife_test.go` — all handler/middleware tests
+- `pkg/<feature>/<feature>_test.go` — per-feature handler/middleware tests
 - `internal/adapters/cli/cli_test.go` — CLI parsing tests
 - `internal/events/events_test.go` — event bus tests
 

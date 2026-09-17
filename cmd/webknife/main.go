@@ -7,8 +7,8 @@ package main
 import (
 	"os"
 
-	"github.com/webknife/webknife/internal/adapters/cli"
-	"github.com/webknife/webknife/internal/application"
+	"github.com/aognio/webknife/internal/adapters/cli"
+	"github.com/aognio/webknife/internal/application"
 )
 
 func main() {

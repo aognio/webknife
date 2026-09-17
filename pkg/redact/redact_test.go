@@ -3,7 +3,7 @@ package redact_test
 import (
 	"testing"
 
-	"github.com/webknife/webknife/pkg/redact"
+	"github.com/aognio/webknife/pkg/redact"
 )
 
 func TestRedactValue(t *testing.T) {

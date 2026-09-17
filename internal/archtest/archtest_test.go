@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-const modulePrefix = "github.com/webknife/webknife"
+const modulePrefix = "github.com/aognio/webknife"
 
 var featurePackages = []string{
 	"pkg/static",

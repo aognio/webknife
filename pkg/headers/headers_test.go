@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/webknife/webknife/pkg/headers"
+	"github.com/aognio/webknife/pkg/headers"
 )
 
 func TestMiddleware_SetRequest(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/webknife/webknife/pkg/echo"
+	"github.com/aognio/webknife/pkg/echo"
 )
 
 func TestEchoHandler_GET(t *testing.T) {
