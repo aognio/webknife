@@ -1,0 +1,4 @@
+.development/
+/bin/
+/webknife
+coverage.out
