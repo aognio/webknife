@@ -1,8 +1,9 @@
-package webknife
+// Package redact provides centralized secret detection and masking utilities.
+//
+// This package has no dependencies on other Webknife feature packages.
+package redact
 
-import (
-	"strings"
-)
+import "strings"
 
 var sensitiveHeaders = map[string]bool{
 	"authorization":       true,
@@ -20,15 +21,18 @@ var sensitiveQueryParams = map[string]bool{
 	"apikey":   true,
 }
 
-func RedactHeader(name string) bool {
+// IsSensitiveHeader returns true if the header name should be redacted.
+func IsSensitiveHeader(name string) bool {
 	return sensitiveHeaders[strings.ToLower(name)]
 }
 
-func RedactQueryParam(name string) bool {
+// IsSensitiveQueryParam returns true if the query param should be redacted.
+func IsSensitiveQueryParam(name string) bool {
 	return sensitiveQueryParams[strings.ToLower(name)]
 }
 
-func RedactValue(s string) string {
+// Value masks a sensitive string, keeping first 2 and last 2 characters.
+func Value(s string) string {
 	if len(s) == 0 {
 		return s
 	}

@@ -1,4 +1,34 @@
+# Development workspace
 .development/
+
+# Build output
 /bin/
 /webknife
+/webknife.exe
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test output
 coverage.out
+*.prof
+
+# Go
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

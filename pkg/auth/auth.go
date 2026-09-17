@@ -1,17 +1,22 @@
-package webknife
+// Package auth provides HTTP Basic Authentication middleware.
+//
+// This package has no dependencies on other Webknife feature packages.
+package auth
 
 import (
 	"crypto/subtle"
 	"net/http"
 )
 
-type BasicAuthConfig struct {
+// Config holds configuration for Basic Authentication.
+type Config struct {
 	Username string
 	Password string
 	Realm    string
 }
 
-func BasicAuth(cfg BasicAuthConfig, next http.Handler) http.Handler {
+// Basic returns middleware that enforces HTTP Basic Authentication.
+func Basic(cfg Config, next http.Handler) http.Handler {
 	if cfg.Realm == "" {
 		cfg.Realm = "Restricted"
 	}

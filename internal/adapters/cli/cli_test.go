@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseArgs_NoCommand(t *testing.T) {
-	_, _, err := cli.ParseArgs([]string{"webknife"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	_, _, err := cli.Parse([]string{"webknife"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err == nil {
 		t.Fatal("expected error for no command")
 	}
@@ -16,7 +16,7 @@ func TestParseArgs_NoCommand(t *testing.T) {
 
 func TestParseArgs_Version(t *testing.T) {
 	stdout := bytes.NewBuffer(nil)
-	cmd, _, err := cli.ParseArgs([]string{"webknife", "version"}, stdout, bytes.NewBuffer(nil))
+	cmd, _, err := cli.Parse([]string{"webknife", "version"}, stdout, bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func TestParseArgs_Version(t *testing.T) {
 
 func TestParseArgs_Help(t *testing.T) {
 	stdout := bytes.NewBuffer(nil)
-	cmd, _, err := cli.ParseArgs([]string{"webknife", "help"}, stdout, bytes.NewBuffer(nil))
+	cmd, _, err := cli.Parse([]string{"webknife", "help"}, stdout, bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,14 +43,14 @@ func TestParseArgs_Help(t *testing.T) {
 }
 
 func TestParseArgs_UnknownCommand(t *testing.T) {
-	_, _, err := cli.ParseArgs([]string{"webknife", "unknown"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	_, _, err := cli.Parse([]string{"webknife", "unknown"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err == nil {
 		t.Fatal("expected error for unknown command")
 	}
 }
 
 func TestParseArgs_Serve(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "serve", "--listen", ":9090", "--root", "/tmp"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "serve", "--listen", ":9090", "--root", "/tmp"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestParseArgs_Serve(t *testing.T) {
 }
 
 func TestParseArgs_ServeDefaults(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "serve"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "serve"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestParseArgs_ServeDefaults(t *testing.T) {
 }
 
 func TestParseArgs_ServeAuth(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "serve", "--auth", "admin:secret"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "serve", "--auth", "admin:secret"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestParseArgs_ServeAuth(t *testing.T) {
 }
 
 func TestParseArgs_ServeTLS(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "serve", "--tls-cert", "cert.pem", "--tls-key", "key.pem"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "serve", "--tls-cert", "cert.pem", "--tls-key", "key.pem"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func TestParseArgs_ServeTLS(t *testing.T) {
 }
 
 func TestParseArgs_ServeLogFormat(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "serve", "--log-format", "json"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "serve", "--log-format", "json"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,7 +124,7 @@ func TestParseArgs_ServeLogFormat(t *testing.T) {
 }
 
 func TestParseArgs_Proxy(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "proxy", "--listen", ":9090", "--upstream", "http://localhost:3000"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "proxy", "--listen", ":9090", "--upstream", "http://localhost:3000"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,14 +140,14 @@ func TestParseArgs_Proxy(t *testing.T) {
 }
 
 func TestParseArgs_ProxyNoUpstream(t *testing.T) {
-	_, _, err := cli.ParseArgs([]string{"webknife", "proxy"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	_, _, err := cli.Parse([]string{"webknife", "proxy"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err == nil {
 		t.Fatal("expected error for missing upstream")
 	}
 }
 
 func TestParseArgs_ProxyAuth(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "proxy", "--upstream", "http://localhost:3000", "--auth", "admin:secret"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "proxy", "--upstream", "http://localhost:3000", "--auth", "admin:secret"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,7 +160,7 @@ func TestParseArgs_ProxyAuth(t *testing.T) {
 }
 
 func TestParseArgs_Echo(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "echo", "--listen", ":9090"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "echo", "--listen", ":9090"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +173,7 @@ func TestParseArgs_Echo(t *testing.T) {
 }
 
 func TestParseArgs_EchoDefaults(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "echo"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "echo"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -189,7 +189,7 @@ func TestParseArgs_EchoDefaults(t *testing.T) {
 }
 
 func TestParseArgs_Respond(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "respond", "--status", "503", "--body", "Service unavailable"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "respond", "--status", "503", "--body", "Service unavailable"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,7 +205,7 @@ func TestParseArgs_Respond(t *testing.T) {
 }
 
 func TestParseArgs_RespondDefaults(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "respond"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "respond"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -218,7 +218,7 @@ func TestParseArgs_RespondDefaults(t *testing.T) {
 }
 
 func TestParseArgs_RespondContentType(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "respond", "--status", "429", "--content-type", "application/json"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "respond", "--status", "429", "--content-type", "application/json"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -234,7 +234,7 @@ func TestParseArgs_RespondContentType(t *testing.T) {
 }
 
 func TestParseArgs_Redirect(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "redirect", "--to", "https://example.com"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "redirect", "--to", "https://example.com"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +250,7 @@ func TestParseArgs_Redirect(t *testing.T) {
 }
 
 func TestParseArgs_RedirectStatus(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "redirect", "--to", "https://example.com", "--status", "301"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "redirect", "--to", "https://example.com", "--status", "301"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -263,7 +263,7 @@ func TestParseArgs_RedirectStatus(t *testing.T) {
 }
 
 func TestParseArgs_RedirectPreservePath(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{"webknife", "redirect", "--to", "https://example.com", "--preserve-path"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	cmd, cfg, err := cli.Parse([]string{"webknife", "redirect", "--to", "https://example.com", "--preserve-path"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -276,14 +276,14 @@ func TestParseArgs_RedirectPreservePath(t *testing.T) {
 }
 
 func TestParseArgs_RedirectNoTarget(t *testing.T) {
-	_, _, err := cli.ParseArgs([]string{"webknife", "redirect"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	_, _, err := cli.Parse([]string{"webknife", "redirect"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err == nil {
 		t.Fatal("expected error for missing --to")
 	}
 }
 
 func TestParseArgs_HeaderFlags(t *testing.T) {
-	cmd, cfg, err := cli.ParseArgs([]string{
+	cmd, cfg, err := cli.Parse([]string{
 		"webknife", "proxy",
 		"--upstream", "http://localhost:3000",
 		"--set-request-header", "X-Debug: true",
@@ -304,7 +304,7 @@ func TestParseArgs_HeaderFlags(t *testing.T) {
 }
 
 func TestParseArgs_Verbose(t *testing.T) {
-	_, cfg, err := cli.ParseArgs([]string{"webknife", "echo", "-v"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	_, cfg, err := cli.Parse([]string{"webknife", "echo", "-v"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -314,7 +314,7 @@ func TestParseArgs_Verbose(t *testing.T) {
 }
 
 func TestParseArgs_EchoMaxBody(t *testing.T) {
-	_, cfg, err := cli.ParseArgs([]string{"webknife", "echo", "--max-body", "1024"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
+	_, cfg, err := cli.Parse([]string{"webknife", "echo", "--max-body", "1024"}, bytes.NewBuffer(nil), bytes.NewBuffer(nil))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,4 +1,7 @@
-package webknife
+// Package redirect provides a handler that redirects requests to a target URL.
+//
+// This package has no dependencies on other Webknife feature packages.
+package redirect
 
 import (
 	"fmt"
@@ -6,30 +9,24 @@ import (
 	"net/url"
 )
 
-var validRedirectCodes = map[int]bool{
-	301: true,
-	302: true,
-	303: true,
-	307: true,
-	308: true,
-}
+var validCodes = map[int]bool{301: true, 302: true, 303: true, 307: true, 308: true}
 
-type RedirectConfig struct {
+// Config holds configuration for the redirect handler.
+type Config struct {
 	StatusCode   int
 	Target       string
 	PreservePath bool
 }
 
-func NewRedirectHandler(cfg RedirectConfig) (http.Handler, error) {
-	if !validRedirectCodes[cfg.StatusCode] {
+// New returns an http.Handler that redirects to the configured target.
+func New(cfg Config) (http.Handler, error) {
+	if !validCodes[cfg.StatusCode] {
 		return nil, fmt.Errorf("invalid redirect status code: %d (must be 301, 302, 303, 307, or 308)", cfg.StatusCode)
 	}
-
 	targetURL, err := url.Parse(cfg.Target)
 	if err != nil {
 		return nil, fmt.Errorf("invalid redirect target: %w", err)
 	}
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var redirectURL *url.URL
 		if cfg.PreservePath {

@@ -1,4 +1,8 @@
-package webknife
+// Package echo provides a request inspection handler that reflects
+// incoming HTTP requests as structured JSON.
+//
+// This package has no dependencies on other Webknife feature packages.
+package echo
 
 import (
 	"encoding/json"
@@ -8,13 +12,18 @@ import (
 	"unicode/utf8"
 )
 
-const DefaultMaxBodySize = int64(1 << 20) // 1MB
+// DefaultMaxBodySize is the default maximum body size for inspection (1MB).
+const DefaultMaxBodySize = int64(1 << 20)
 
-type EchoConfig struct {
+// Config holds configuration for the echo handler.
+type Config struct {
+	// MaxBodySize is the maximum number of body bytes to retain.
+	// Bodies exceeding this are truncated. Zero uses DefaultMaxBodySize.
 	MaxBodySize int64
 }
 
-type RequestInspection struct {
+// Inspection represents a structured diagnostic view of an HTTP request.
+type Inspection struct {
 	Method        string              `json:"method"`
 	Scheme        string              `json:"scheme"`
 	Host          string              `json:"host"`
@@ -42,25 +51,27 @@ type CookieInfo struct {
 	Value string `json:"value"`
 }
 
-func NewEchoHandler(cfg EchoConfig) http.Handler {
-	if cfg.MaxBodySize <= 0 {
-		cfg.MaxBodySize = DefaultMaxBodySize
+// New returns an http.Handler that reflects requests as JSON.
+func New(cfg Config) http.Handler {
+	maxBody := cfg.MaxBodySize
+	if maxBody <= 0 {
+		maxBody = DefaultMaxBodySize
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		inspection := inspectRequest(r, cfg.MaxBodySize)
+		inspection := inspectRequest(r, maxBody)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(inspection)
 	})
 }
 
-func inspectRequest(r *http.Request, maxBodySize int64) *RequestInspection {
+func inspectRequest(r *http.Request, maxBodySize int64) *Inspection {
 	scheme := "http"
 	if r.TLS != nil {
 		scheme = "https"
 	}
 
-	inspection := &RequestInspection{
+	ins := &Inspection{
 		Method:        r.Method,
 		Scheme:        scheme,
 		Host:          r.Host,
@@ -74,18 +85,18 @@ func inspectRequest(r *http.Request, maxBodySize int64) *RequestInspection {
 	}
 
 	for k, v := range r.Header {
-		inspection.Headers[k] = v
+		ins.Headers[k] = v
 	}
 
 	if r.TLS != nil {
-		inspection.TLS = &TLSInfo{
+		ins.TLS = &TLSInfo{
 			Version:    tlsVersionString(r.TLS.Version),
 			ServerName: r.TLS.ServerName,
 		}
 	}
 
 	for _, cookie := range r.Cookies() {
-		inspection.Cookies = append(inspection.Cookies, &CookieInfo{
+		ins.Cookies = append(ins.Cookies, &CookieInfo{
 			Name:  cookie.Name,
 			Value: cookie.Value,
 		})
@@ -94,15 +105,15 @@ func inspectRequest(r *http.Request, maxBodySize int64) *RequestInspection {
 	if r.Body != nil {
 		bodyBytes, truncated, isBinary := readBody(r.Body, maxBodySize)
 		if isBinary {
-			inspection.BodyBinary = true
-			inspection.Body = encodeBinaryBody(bodyBytes)
+			ins.BodyBinary = true
+			ins.Body = encodeBinaryBody(bodyBytes)
 		} else {
-			inspection.Body = string(bodyBytes)
+			ins.Body = string(bodyBytes)
 		}
-		inspection.BodyTruncated = truncated
+		ins.BodyTruncated = truncated
 	}
 
-	return inspection
+	return ins
 }
 
 func readBody(body io.Reader, maxSize int64) (data []byte, truncated bool, isBinary bool) {
@@ -128,13 +139,10 @@ func encodeBinaryBody(data []byte) string {
 			sb.WriteString(`\x`)
 			sb.WriteString(strings.ToUpper(strings.Replace(
 				strings.TrimPrefix(
-					strings.Replace(
-						string([]byte{b}),
-						`\`, `\\`, -1,
-					),
-					"\\x",
+					strings.Replace(string([]byte{b}), `\`, `\\`, -1),
+					`\x`,
 				),
-				"\\x", "", -1,
+				`\x`, "", -1,
 			)))
 		}
 	}

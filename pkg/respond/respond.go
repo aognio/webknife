@@ -1,4 +1,7 @@
-package webknife
+// Package respond provides a handler that returns an arbitrary HTTP response.
+//
+// This package has no dependencies on other Webknife feature packages.
+package respond
 
 import (
 	"fmt"
@@ -7,7 +10,8 @@ import (
 	"strings"
 )
 
-type RespondConfig struct {
+// Config holds configuration for the respond handler.
+type Config struct {
 	StatusCode  int
 	Body        string
 	BodyFile    string
@@ -15,7 +19,8 @@ type RespondConfig struct {
 	Headers     map[string]string
 }
 
-func NewRespondHandler(cfg RespondConfig) (http.Handler, error) {
+// New returns an http.Handler that always responds with the configured response.
+func New(cfg Config) (http.Handler, error) {
 	if cfg.StatusCode < 100 || cfg.StatusCode > 599 {
 		return nil, fmt.Errorf("invalid status code: %d", cfg.StatusCode)
 	}
@@ -48,6 +53,7 @@ func NewRespondHandler(cfg RespondConfig) (http.Handler, error) {
 	}), nil
 }
 
+// ParseHeaders parses "Name: Value" strings into a map.
 func ParseHeaders(headerFlags []string) (map[string]string, error) {
 	headers := make(map[string]string)
 	for _, h := range headerFlags {

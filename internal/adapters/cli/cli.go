@@ -1,19 +1,22 @@
+// Package cli is a thin adapter that parses command-line flags into
+// an application.Config. It has no business logic — validation and
+// handler construction happen in the application layer.
 package cli
 
 import (
 	"flag"
 	"fmt"
 	"io"
-	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/webknife/webknife/internal/build"
-	"github.com/webknife/webknife/internal/events"
-	"github.com/webknife/webknife/pkg/webknife"
 )
 
+// Config mirrors application.Config but is only produced by parsing.
+// See internal/application for the canonical definition.
 type Config struct {
+	Command string
+
 	ListenAddr string
 	Root       string
 	Upstream   string
@@ -42,7 +45,9 @@ type Config struct {
 	RemoveResponseHeaders []string
 }
 
-func ParseArgs(args []string, stdout, stderr io.Writer) (string, *Config, error) {
+// Parse parses command-line args and returns the command name and config.
+// It only handles flag parsing and basic required-field checks.
+func Parse(args []string, stdout, stderr io.Writer) (string, *Config, error) {
 	if len(args) < 2 {
 		printUsage(stdout)
 		return "", nil, fmt.Errorf("no command specified")
@@ -170,6 +175,7 @@ func parseRedirect(args []string, stdout io.Writer) (string, *Config, error) {
 }
 
 func printUsage(w io.Writer) {
+	fmt.Fprintf(w, "webknife %s\n\n", build.Version)
 	fmt.Fprintln(w, `Usage:
   webknife <command> [options]
 
@@ -207,158 +213,6 @@ Examples:
   webknife proxy --listen :8080 --upstream http://localhost:3000 \
     --set-request-header 'X-Debug: true' \
     --remove-response-header Server`)
-}
-
-func Run(args []string) error {
-	return RunWithWriter(args, os.Stdout, os.Stderr)
-}
-
-func RunWithWriter(args []string, stdout, stderr io.Writer) error {
-	cmd, cfg, err := ParseArgs(args, stdout, stderr)
-	if err != nil {
-		if cmd == "" && cfg == nil {
-			return err
-		}
-	}
-
-	if cmd == "" {
-		return nil
-	}
-
-	bus := events.NewEventBus()
-	logAdapter := webknife.NewLogAdapter(
-		webknife.LogFormat(cfg.LogFormat),
-		stdout,
-	)
-	bus.Subscribe(logAdapter.Handle)
-
-	var handler http.Handler
-
-	switch cmd {
-	case "serve":
-		handler, err = buildServeHandler(cfg, bus)
-	case "proxy":
-		handler, err = buildProxyHandler(cfg, bus)
-	case "echo":
-		handler, err = buildEchoHandler(cfg, bus)
-	case "respond":
-		handler, err = buildRespondHandler(cfg, bus)
-	case "redirect":
-		handler, err = buildRedirectHandler(cfg, bus)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	pub := webknife.NewEventPublisher(bus)
-	srv := webknife.NewServer(webknife.ServerConfig{
-		ListenAddr: cfg.ListenAddr,
-		TLSCert:    cfg.TLSCert,
-		TLSKey:     cfg.TLSKey,
-		Handler:    handler,
-	}, pub)
-
-	return webknife.ListenAndServe(srv, webknife.ServerConfig{
-		ListenAddr: cfg.ListenAddr,
-		TLSCert:    cfg.TLSCert,
-		TLSKey:     cfg.TLSKey,
-	}, pub)
-}
-
-func wrapWithMiddleware(handler http.Handler, cfg *Config, bus *events.EventBus) (http.Handler, error) {
-	headerMws, err := webknife.BuildHeaderMiddlewares(webknife.MultiHeaderConfig{
-		SetRequestHeaders:     cfg.SetRequestHeaders,
-		AddRequestHeaders:     cfg.AddRequestHeaders,
-		RemoveRequestHeaders:  cfg.RemoveRequestHeaders,
-		SetResponseHeaders:    cfg.SetResponseHeaders,
-		AddResponseHeaders:    cfg.AddResponseHeaders,
-		RemoveResponseHeaders: cfg.RemoveResponseHeaders,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	for i := len(headerMws) - 1; i >= 0; i-- {
-		handler = headerMws[i](handler)
-	}
-
-	if cfg.Auth != "" {
-		user, pass := parseAuth(cfg.Auth)
-		handler = webknife.BasicAuth(webknife.BasicAuthConfig{
-			Username: user,
-			Password: pass,
-		}, handler)
-	}
-
-	pub := webknife.NewEventPublisher(bus)
-	handler = events.RequestMiddleware(pub)(handler)
-
-	return handler, nil
-}
-
-func buildServeHandler(cfg *Config, bus *events.EventBus) (http.Handler, error) {
-	staticHandler, err := webknife.NewStaticHandler(webknife.StaticConfig{Root: cfg.Root})
-	if err != nil {
-		return nil, fmt.Errorf("invalid root directory: %w", err)
-	}
-	return wrapWithMiddleware(staticHandler, cfg, bus)
-}
-
-func buildProxyHandler(cfg *Config, bus *events.EventBus) (http.Handler, error) {
-	proxyHandler, err := webknife.NewProxyHandler(webknife.ProxyConfig{
-		Upstream: cfg.Upstream,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("invalid upstream URL: %w", err)
-	}
-	return wrapWithMiddleware(proxyHandler, cfg, bus)
-}
-
-func buildEchoHandler(cfg *Config, bus *events.EventBus) (http.Handler, error) {
-	echoHandler := webknife.NewEchoHandler(webknife.EchoConfig{
-		MaxBodySize: cfg.EchoMaxBody,
-	})
-	return wrapWithMiddleware(echoHandler, cfg, bus)
-}
-
-func buildRespondHandler(cfg *Config, bus *events.EventBus) (http.Handler, error) {
-	headers, err := webknife.ParseHeaders(cfg.SetResponseHeaders)
-	if err != nil {
-		return nil, err
-	}
-	respondHandler, err := webknife.NewRespondHandler(webknife.RespondConfig{
-		StatusCode:  cfg.RespondStatusCode,
-		Body:        cfg.RespondBody,
-		BodyFile:    cfg.RespondBodyFile,
-		ContentType: cfg.RespondContentType,
-		Headers:     headers,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return wrapWithMiddleware(respondHandler, cfg, bus)
-}
-
-func buildRedirectHandler(cfg *Config, bus *events.EventBus) (http.Handler, error) {
-	redirectHandler, err := webknife.NewRedirectHandler(webknife.RedirectConfig{
-		StatusCode:   cfg.RedirectStatusCode,
-		Target:       cfg.RedirectTarget,
-		PreservePath: cfg.RedirectPreservePath,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return wrapWithMiddleware(redirectHandler, cfg, bus)
-}
-
-func parseAuth(auth string) (string, string) {
-	for i := 0; i < len(auth); i++ {
-		if auth[i] == ':' {
-			return auth[:i], auth[i+1:]
-		}
-	}
-	return auth, ""
 }
 
 type multiStringValue struct {
